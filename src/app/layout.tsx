@@ -11,6 +11,7 @@ import {
   localWallet,
   walletConnect,
 } from "@thirdweb-dev/react";
+import Navbar from "@/components/NavBar";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -34,7 +35,10 @@ export default function RootLayout({
         ]}
       >
         <body className={inter.className}>
-          <main>{children}</main>
+          <main>
+            <Navbar />
+            {children}
+          </main>
         </body>
       </ThirdwebProvider>
     </html>

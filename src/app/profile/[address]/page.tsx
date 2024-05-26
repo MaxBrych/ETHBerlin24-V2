@@ -1,13 +1,69 @@
 "use client";
-import { Key, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { init, useQuery } from "@airstack/airstack-react";
 import GET_PROFILE_INFO from "@/app/graphql/query";
 import CastsList from "@/components/CastsList";
-import { usePublications, PublicationType, LimitType } from "@lens-protocol/react-web";
+import { create } from "ipfs-http-client";
+import { ConnectWallet, useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
+
+const ipfs = create({ url: "https://ipfs.infura.io:5001/api/v0" });
+
+const themes = {
+  light: "/* light theme CSS */",
+  dark: "/* dark theme CSS */",
+  highContrast: "/* high-contrast theme CSS */",
+};
 
 export default function ProfilePage() {
+  const [currentTheme, setCurrentTheme] = useState("light");
+  const address = useAddress();
   const [apiInitialized, setApiInitialized] = useState(false);
-  const identity = "0x648aa14e4424e0825a5ce739c8c68610e143fb79";
+  const { address: walletAddress } = useParams(); // Fetch wallet address from URL
+
+  // Smart contract information
+  const contractAddress = "0x7b0Be0B88762f0b9c2526A1B87E5E95A0a47EF55";
+  const { contract } = useContract(contractAddress);
+  const { mutateAsync: setThemeCID } = useContractWrite(contract, "setThemeCID");
+
+  const saveThemeToIPFS = async (theme) => {
+    const { cid } = await ipfs.add(theme);
+    return cid.toString();
+  };
+
+  const loadThemeFromIPFS = async (cid) => {
+    const data = await ipfs.cat(cid);
+    return new TextDecoder().decode(data);
+  };
+
+  const changeTheme = async (theme) => {
+    setCurrentTheme(theme);
+    const cid = await saveThemeToIPFS(themes[theme]);
+    console.log(`Theme saved with CID: ${cid}`);
+    saveCIDOnChain(cid);
+  };
+
+  const saveCIDOnChain = async (cid) => {
+    try {
+      const tx = await setThemeCID({ args: [cid] });
+      console.log("CID saved on-chain:", cid);
+    } catch (error) {
+      console.error("Error saving CID on-chain:", error);
+    }
+  };
+
+  const loadCIDFromChain = async () => {
+    try {
+      const cid = await contract.call("getThemeCID", walletAddress);
+      if (cid) {
+        const themeCSS = await loadThemeFromIPFS(cid);
+        setCurrentTheme(themeCSS);
+        console.log("Loaded theme from IPFS:", themeCSS);
+      }
+    } catch (error) {
+      console.error("Error loading CID from chain:", error);
+    }
+  };
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -17,16 +73,16 @@ export default function ProfilePage() {
   }, []);
 
   const { data, loading, error } = useQuery(
-    apiInitialized ? GET_PROFILE_INFO : "",
-    apiInitialized ? { identity } : null
+    apiInitialized && walletAddress ? GET_PROFILE_INFO : "",
+    apiInitialized && walletAddress ? { identity: walletAddress } : null
   );
 
   useEffect(() => {
-    if (apiInitialized) {
+    if (apiInitialized && walletAddress) {
       console.log("Query being sent:", GET_PROFILE_INFO);
-      console.log("Variables being sent:", { identity });
+      console.log("Variables being sent:", { identity: walletAddress });
     }
-  }, [apiInitialized]);
+  }, [apiInitialized, walletAddress]);
 
   useEffect(() => {
     if (error) {
@@ -40,10 +96,16 @@ export default function ProfilePage() {
     }
   }, [data]);
 
+  useEffect(() => {
+    if (walletAddress) {
+      loadCIDFromChain();
+    }
+  }, [walletAddress]);
+
   if (loading) return <div className="text-white text-center mt-20">Loading...</div>;
   if (error) return <div className="text-red-500 text-center mt-20">Error: {error.message}</div>;
 
-  const renderProfileSection = (title, profile) => (
+  const renderProfileSection = (profile) => (
     <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl">
       <div className="flex items-center space-x-4">
         <img
@@ -66,6 +128,20 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
       <h1 className="text-3xl font-bold mt-6">Profile Info</h1>
+      {/*
+      <div className={currentTheme}>
+        {!address ? (
+          <ConnectWallet btnTitle="Sign In" theme="dark" />
+        ) : (
+          <div>
+            <p>Connected with: {address}</p>
+            <button onClick={() => changeTheme("light")}>Light Theme</button>
+            <button onClick={() => changeTheme("dark")}>Dark Theme</button>
+            <button onClick={() => changeTheme("highContrast")}>High Contrast</button>
+          </div>
+        )}
+      </div>
+      */}
       {data?.Wallet && (
         <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl text-center">
           <img
@@ -81,12 +157,11 @@ export default function ProfilePage() {
         </div>
       )}
       {data?.farcasterSocials?.Social &&
-        data.farcasterSocials.Social.map((profile: any, index: Key | null | undefined) => (
+        data.farcasterSocials.Social.map((profile, index) => (
           <div key={index} className="w-full max-w-2xl">
-            {renderProfileSection("Farcaster Profile", profile)}
+            {renderProfileSection(profile)}
           </div>
         ))}
-
       {data?.FarcasterCasts?.Cast && <CastsList casts={data.FarcasterCasts.Cast} />}
     </div>
   );
