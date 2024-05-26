@@ -26,6 +26,7 @@ export default function RootLayout({
     <html lang="en">
       <ThirdwebProvider
         clientId={client}
+        activeChain="base"
         supportedWallets={[
           metamaskWallet({ recommended: true }),
 

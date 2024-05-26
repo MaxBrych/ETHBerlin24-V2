@@ -4,22 +4,39 @@ import { useParams } from "next/navigation";
 import { init, useQuery } from "@airstack/airstack-react";
 import GET_PROFILE_INFO from "@/app/graphql/query";
 import CastsList from "@/components/CastsList";
-import { create } from "ipfs-http-client";
-import { ConnectWallet, useAddress, useContract, useContractWrite } from "@thirdweb-dev/react";
-
-const ipfs = create({ url: "https://ipfs.infura.io:5001/api/v0" });
+import {
+  ConnectWallet,
+  useAddress,
+  useContract,
+  useContractWrite,
+  useStorageUpload,
+} from "@thirdweb-dev/react";
 
 const themes = {
-  light: "/* light theme CSS */",
-  dark: "/* dark theme CSS */",
-  highContrast: "/* high-contrast theme CSS */",
+  light: `
+    body { background-color: red; color: black; }
+    .bg { background-color: white; }
+    .text { color: black; }
+  `,
+  dark: `
+    body { background-color: blue; color: white; }
+    .bg { background-color: black; }
+    .text { color: white; }
+  `,
+  highContrast: `
+    body { background-color: yellow; color: blue; }
+    .bg { background-color: yellow; }
+    .text { color: blue; }
+  `,
 };
 
 export default function ProfilePage() {
   const [currentTheme, setCurrentTheme] = useState("light");
+  const [themeCSS, setThemeCSS] = useState("");
   const address = useAddress();
   const [apiInitialized, setApiInitialized] = useState(false);
   const { address: walletAddress } = useParams(); // Fetch wallet address from URL
+  const { mutateAsync: upload } = useStorageUpload();
 
   // Smart contract information
   const contractAddress = "0x7b0Be0B88762f0b9c2526A1B87E5E95A0a47EF55";
@@ -27,18 +44,21 @@ export default function ProfilePage() {
   const { mutateAsync: setThemeCID } = useContractWrite(contract, "setThemeCID");
 
   const saveThemeToIPFS = async (theme) => {
-    const { cid } = await ipfs.add(theme);
-    return cid.toString();
+    const file = new File([theme], "theme.css");
+    const uris = await upload({ data: [file] });
+    return uris[0]; // Return the URI of the uploaded file
   };
 
   const loadThemeFromIPFS = async (cid) => {
-    const data = await ipfs.cat(cid);
-    return new TextDecoder().decode(data);
+    const response = await fetch(cid);
+    return await response.text();
   };
 
   const changeTheme = async (theme) => {
+    const css = themes[theme];
+    setThemeCSS(css);
     setCurrentTheme(theme);
-    const cid = await saveThemeToIPFS(themes[theme]);
+    const cid = await saveThemeToIPFS(css);
     console.log(`Theme saved with CID: ${cid}`);
     saveCIDOnChain(cid);
   };
@@ -57,7 +77,7 @@ export default function ProfilePage() {
       const cid = await contract.call("getThemeCID", walletAddress);
       if (cid) {
         const themeCSS = await loadThemeFromIPFS(cid);
-        setCurrentTheme(themeCSS);
+        setThemeCSS(themeCSS);
         console.log("Loaded theme from IPFS:", themeCSS);
       }
     } catch (error) {
@@ -128,20 +148,25 @@ export default function ProfilePage() {
   return (
     <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
       <h1 className="text-3xl font-bold mt-6">Profile Info</h1>
-      {/*
+      <style>{themeCSS}</style>
       <div className={currentTheme}>
         {!address ? (
           <ConnectWallet btnTitle="Sign In" theme="dark" />
         ) : (
-          <div>
-            <p>Connected with: {address}</p>
-            <button onClick={() => changeTheme("light")}>Light Theme</button>
-            <button onClick={() => changeTheme("dark")}>Dark Theme</button>
-            <button onClick={() => changeTheme("highContrast")}>High Contrast</button>
-          </div>
+          walletAddress.toLowerCase() === address.toLowerCase() && (
+            <div className="mt-4">
+              <p>Connected with: {address}</p>
+              <button onClick={() => changeTheme("light")} className="mr-2">
+                Light Theme
+              </button>
+              <button onClick={() => changeTheme("dark")} className="mr-2">
+                Dark Theme
+              </button>
+              <button onClick={() => changeTheme("highContrast")}>High Contrast</button>
+            </div>
+          )
         )}
       </div>
-      */}
       {data?.Wallet && (
         <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl text-center">
           <img
