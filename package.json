@@ -10,9 +10,11 @@
   },
   "dependencies": {
     "@airstack/airstack-react": "^0.6.3",
+    "@lens-protocol/react-web": "^2.2.0",
     "@thirdweb-dev/react": "^4.6.26",
     "@thirdweb-dev/sdk": "^4.0.87",
     "ethers": "^5.7.2",
+    "ipfs-http-client": "^60.0.1",
     "next": "14.2.3",
     "react": "^18",
     "react-dom": "^18"
