@@ -26,67 +26,6 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    if (address) {
-      const providerUrl = process.env.NEXT_PUBLIC_PROVIDER_URL;
-      if (!providerUrl) {
-        console.error("Provider URL is not set in environment variables");
-        return;
-      }
-
-      const provider = new ethers.providers.JsonRpcProvider(providerUrl);
-
-      const fetchEnsDetails = async () => {
-        try {
-          const ensNameLookup = await provider.lookupAddress(address);
-          if (ensNameLookup) {
-            setEnsName(ensNameLookup);
-
-            const client = new ApolloClient({
-              uri: "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
-              cache: new InMemoryCache(),
-            });
-
-            const query = gql`
-              {
-                domains(where: { name: "${ensNameLookup}" }) {
-                  id
-                  name
-                  resolver {
-                    texts
-                  }
-                }
-              }
-            `;
-
-            const result = await client.query({ query });
-            if (result.data && result.data.domains.length > 0 && result.data.domains[0].resolver) {
-              const resolver = await provider.getResolver(ensNameLookup);
-              if (resolver) {
-                const texts = result.data.domains[0].resolver.texts || [];
-
-                const textRecords = await Promise.all(
-                  texts.map((key: string) => resolver.getText(key))
-                );
-                const newRecords: Record<string, string> = {};
-                texts.forEach((text: string, index: number) => {
-                  newRecords[text] = textRecords[index];
-                });
-
-                setEnsRecords(newRecords);
-              }
-              setLoading(false);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching ENS details:", error);
-        }
-      };
-
-      fetchEnsDetails();
-    }
-  }, [address]);
-
-  useEffect(() => {
     console.log("Chain ID from useChainId:", chainId);
     console.log("Expected Chain ID:", Base.chainId);
     if (chainId && chainId === Base.chainId) {
@@ -130,17 +69,6 @@ export default function Navbar() {
               >
                 Go to your profile
               </button>
-              <div className="flex gap-1 align-middle">
-                <button className="text-decoration-none text-md" onClick={handleProfileRedirect}>
-                  <Image
-                    src={ensRecords.avatar || avatarUrl || ""}
-                    alt="Avatar"
-                    height={48}
-                    width={48}
-                    className="border border-gray-300 rounded-full"
-                  />
-                </button>
-              </div>
             </div>
           )}
         </div>

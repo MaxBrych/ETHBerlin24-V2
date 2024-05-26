@@ -10,6 +10,7 @@ import {
   useContract,
   useContractWrite,
   useStorageUpload,
+  useContractRead,
 } from "@thirdweb-dev/react";
 
 const themes = {
@@ -42,6 +43,7 @@ export default function ProfilePage() {
   const contractAddress = "0x7b0Be0B88762f0b9c2526A1B87E5E95A0a47EF55";
   const { contract } = useContract(contractAddress);
   const { mutateAsync: setThemeCID } = useContractWrite(contract, "setThemeCID");
+  const { data: cid, isLoading, error } = useContractRead(contract, "getThemeCID", [walletAddress]);
 
   const saveThemeToIPFS = async (theme) => {
     const file = new File([theme], "theme.css");
@@ -50,7 +52,10 @@ export default function ProfilePage() {
   };
 
   const loadThemeFromIPFS = async (cid) => {
-    const response = await fetch(cid);
+    const response = await fetch(cid.replace("ipfs://", "https://ipfs.io/ipfs/"));
+    if (!response.ok) {
+      throw new Error("Failed to fetch the theme from IPFS");
+    }
     return await response.text();
   };
 
@@ -73,13 +78,13 @@ export default function ProfilePage() {
   };
 
   const loadCIDFromChain = async () => {
+    if (!cid) return;
+    console.log("IPFS CID:", cid);
+
     try {
-      const cid = await contract.call("getThemeCID", walletAddress);
-      if (cid) {
-        const themeCSS = await loadThemeFromIPFS(cid);
-        setThemeCSS(themeCSS);
-        console.log("Loaded theme from IPFS:", themeCSS);
-      }
+      const themeCSS = await loadThemeFromIPFS(cid);
+      setThemeCSS(themeCSS);
+      console.log("Loaded theme from IPFS:", themeCSS);
     } catch (error) {
       console.error("Error loading CID from chain:", error);
     }
@@ -92,9 +97,22 @@ export default function ProfilePage() {
     }
   }, []);
 
-  const { data, loading, error } = useQuery(
-    apiInitialized && walletAddress ? GET_PROFILE_INFO : "",
-    apiInitialized && walletAddress ? { identity: walletAddress } : null
+  useEffect(() => {
+    if (cid) {
+      loadCIDFromChain();
+    }
+  }, [cid]);
+
+  const {
+    data,
+    loading,
+    error: queryError,
+  } = useQuery(
+    GET_PROFILE_INFO,
+    { identity: walletAddress },
+    {
+      enabled: apiInitialized && !!walletAddress,
+    }
   );
 
   useEffect(() => {
@@ -104,26 +122,13 @@ export default function ProfilePage() {
     }
   }, [apiInitialized, walletAddress]);
 
-  useEffect(() => {
-    if (error) {
-      console.error("Error fetching data:", error);
-    }
-  }, [error]);
-
-  useEffect(() => {
-    if (data) {
-      console.log("Resolved data:", data);
-    }
-  }, [data]);
-
-  useEffect(() => {
-    if (walletAddress) {
-      loadCIDFromChain();
-    }
-  }, [walletAddress]);
-
-  if (loading) return <div className="text-white text-center mt-20">Loading...</div>;
-  if (error) return <div className="text-red-500 text-center mt-20">Error: {error.message}</div>;
+  if (isLoading || loading) return <div className="text-white text-center mt-20">Loading...</div>;
+  if (error || queryError)
+    return (
+      <div className="text-red-500 text-center mt-20">
+        Error: {error?.message || queryError.message}
+      </div>
+    );
 
   const renderProfileSection = (profile) => (
     <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl">
@@ -146,7 +151,10 @@ export default function ProfilePage() {
   );
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white flex flex-col items-center p-6">
+    <div
+      className="min-h-screen flex flex-col items-center p-6"
+      style={{ backgroundColor: currentTheme }}
+    >
       <h1 className="text-3xl font-bold mt-6">Profile Info</h1>
       <style>{themeCSS}</style>
       <div className={currentTheme}>
@@ -155,7 +163,6 @@ export default function ProfilePage() {
         ) : (
           walletAddress.toLowerCase() === address.toLowerCase() && (
             <div className="mt-4">
-              <p>Connected with: {address}</p>
               <button onClick={() => changeTheme("light")} className="mr-2">
                 Light Theme
               </button>
