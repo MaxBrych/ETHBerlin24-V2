@@ -201,23 +201,25 @@ export default function ProfilePage() {
           </div>
         ))}
       {data?.FarcasterCasts?.Cast && <CastsList casts={data.FarcasterCasts.Cast} />}
-      <DropdownMenu>
-        <DropdownMenuTrigger asChild>
-          <Button variant="outline" className="fixed bottom-4 right-4">
-            <FaPen className="mr-2" />
-            Edit
-          </Button>
-        </DropdownMenuTrigger>
-        <DropdownMenuContent className="w-56">
-          <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
-          <DropdownMenuSeparator />
-          <DropdownMenuRadioGroup value={currentTheme} onValueChange={changeTheme}>
-            <DropdownMenuRadioItem value="light">Light Theme</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="dark">Dark Theme</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="highContrast">High Contrast</DropdownMenuRadioItem>
-          </DropdownMenuRadioGroup>
-        </DropdownMenuContent>
-      </DropdownMenu>
+      {address && address.toLowerCase() === (walletAddress as string)?.toLowerCase() && (
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button variant="outline" className="fixed bottom-4 right-4">
+              <FaPen className="mr-2" />
+              Edit
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="w-56">
+            <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuRadioGroup value={currentTheme} onValueChange={changeTheme}>
+              <DropdownMenuRadioItem value="light">Light Theme</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">Dark Theme</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="highContrast">High Contrast</DropdownMenuRadioItem>
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      )}
     </div>
   );
 }
