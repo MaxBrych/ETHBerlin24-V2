@@ -12,6 +12,7 @@ import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
 import { useRouter } from "next/navigation";
 import { ethers } from "ethers";
 import { Base } from "@thirdweb-dev/chains";
+import { Button } from "./ui/button";
 
 export default function Navbar() {
   const address = useAddress();
@@ -63,12 +64,7 @@ export default function Navbar() {
             </button>
           ) : (
             <div className="flex gap-1 align-middle">
-              <button
-                onClick={handleProfileRedirect}
-                className="mt-8 px-4 py-2 bg-blue-500 text-white rounded-md"
-              >
-                Go to your profile
-              </button>
+              <Button onClick={handleProfileRedirect}>Go to your profile</Button>
             </div>
           )}
         </div>

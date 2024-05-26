@@ -13,6 +13,18 @@ import {
   useContractRead,
 } from "@thirdweb-dev/react";
 
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { FaPen } from "react-icons/fa";
+
 const themes = {
   light: `
     body { background-color: red; color: black; }
@@ -163,13 +175,7 @@ export default function ProfilePage() {
         ) : (
           walletAddress.toLowerCase() === address.toLowerCase() && (
             <div className="mt-4">
-              <button onClick={() => changeTheme("light")} className="mr-2">
-                Light Theme
-              </button>
-              <button onClick={() => changeTheme("dark")} className="mr-2">
-                Dark Theme
-              </button>
-              <button onClick={() => changeTheme("highContrast")}>High Contrast</button>
+              <p>Connected with: {address}</p>
             </div>
           )
         )}
@@ -195,6 +201,23 @@ export default function ProfilePage() {
           </div>
         ))}
       {data?.FarcasterCasts?.Cast && <CastsList casts={data.FarcasterCasts.Cast} />}
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <Button variant="outline" className="fixed bottom-4 right-4">
+            <FaPen className="mr-2" />
+            Edit
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent className="w-56">
+          <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
+          <DropdownMenuSeparator />
+          <DropdownMenuRadioGroup value={currentTheme} onValueChange={changeTheme}>
+            <DropdownMenuRadioItem value="light">Light Theme</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="dark">Dark Theme</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="highContrast">High Contrast</DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </div>
   );
 }
