@@ -57,13 +57,13 @@ export default function ProfilePage() {
   const { mutateAsync: setThemeCID } = useContractWrite(contract, "setThemeCID");
   const { data: cid, isLoading, error } = useContractRead(contract, "getThemeCID", [walletAddress]);
 
-  const saveThemeToIPFS = async (theme) => {
+  const saveThemeToIPFS = async (theme: any) => {
     const file = new File([theme], "theme.css");
     const uris = await upload({ data: [file] });
     return uris[0]; // Return the URI of the uploaded file
   };
 
-  const loadThemeFromIPFS = async (cid) => {
+  const loadThemeFromIPFS = async (cid: any) => {
     const response = await fetch(cid.replace("ipfs://", "https://ipfs.io/ipfs/"));
     if (!response.ok) {
       throw new Error("Failed to fetch the theme from IPFS");
@@ -71,8 +71,8 @@ export default function ProfilePage() {
     return await response.text();
   };
 
-  const changeTheme = async (theme) => {
-    const css = themes[theme];
+  const changeTheme = async (theme: any) => {
+    const css = themes[theme as keyof typeof themes];
     setThemeCSS(css);
     setCurrentTheme(theme);
     const cid = await saveThemeToIPFS(css);
@@ -80,7 +80,7 @@ export default function ProfilePage() {
     saveCIDOnChain(cid);
   };
 
-  const saveCIDOnChain = async (cid) => {
+  const saveCIDOnChain = async (cid: any) => {
     try {
       const tx = await setThemeCID({ args: [cid] });
       console.log("CID saved on-chain:", cid);
@@ -124,7 +124,7 @@ export default function ProfilePage() {
     { identity: walletAddress },
     {
       enabled: apiInitialized && !!walletAddress,
-    }
+    } as any // added any type assertion
   );
 
   useEffect(() => {
@@ -138,7 +138,7 @@ export default function ProfilePage() {
   if (error || queryError)
     return (
       <div className="text-red-500 text-center mt-20">
-        Error: {error?.message || queryError.message}
+        Error: {(error as any)?.message || (queryError as any).message}
       </div>
     );
 
@@ -173,7 +173,7 @@ export default function ProfilePage() {
         {!address ? (
           <ConnectWallet btnTitle="Sign In" theme="dark" />
         ) : (
-          walletAddress.toLowerCase() === address.toLowerCase() && (
+          (walletAddress as string).toLowerCase() === address.toLowerCase() && (
             <div className="mt-4">
               <p>Connected with: {address}</p>
             </div>
