@@ -6,16 +6,15 @@ import {
   useChainId,
   ConnectWallet,
 } from "@thirdweb-dev/react";
-import { Base } from "@thirdweb-dev/chains";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 import { ApolloClient, InMemoryCache, gql } from "@apollo/client";
-import { ethers } from "ethers";
 import { useRouter } from "next/navigation";
+import { ethers } from "ethers";
+import { Base } from "@thirdweb-dev/chains";
 
 export default function Navbar() {
   const address = useAddress();
-  const walletAddress = useAddress();
   const disconnect = useDisconnect();
   const isMismatched = useNetworkMismatch();
   const switchChain = useSwitchChain();
@@ -27,22 +26,29 @@ export default function Navbar() {
   const router = useRouter();
 
   useEffect(() => {
-    const provider = new ethers.providers.JsonRpcProvider(process.env.NEXT_PUBLIC_PROVIDER_URL);
+    if (address) {
+      const providerUrl = process.env.NEXT_PUBLIC_PROVIDER_URL;
+      if (!providerUrl) {
+        console.error("Provider URL is not set in environment variables");
+        return;
+      }
 
-    const fetchEnsDetails = async () => {
-      if (walletAddress) {
-        const ensNameLookup = await provider.lookupAddress(walletAddress);
-        if (ensNameLookup) {
-          setEnsName(ensNameLookup);
+      const provider = new ethers.providers.JsonRpcProvider(providerUrl);
 
-          const client = new ApolloClient({
-            uri: "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
-            cache: new InMemoryCache(),
-          });
+      const fetchEnsDetails = async () => {
+        try {
+          const ensNameLookup = await provider.lookupAddress(address);
+          if (ensNameLookup) {
+            setEnsName(ensNameLookup);
 
-          const query = gql`
+            const client = new ApolloClient({
+              uri: "https://api.thegraph.com/subgraphs/name/ensdomains/ens",
+              cache: new InMemoryCache(),
+            });
+
+            const query = gql`
               {
-                domains(where:{name:"${ensNameLookup}"}) {
+                domains(where: { name: "${ensNameLookup}" }) {
                   id
                   name
                   resolver {
@@ -52,33 +58,43 @@ export default function Navbar() {
               }
             `;
 
-          const result = await client.query({
-            query,
-          });
-          if (result.data && result.data.domains.length > 0 && result.data.domains[0].resolver) {
-            const resolver = await provider.getResolver(ensNameLookup);
-            if (resolver) {
-              const texts = result.data.domains[0].resolver.texts || [];
+            const result = await client.query({ query });
+            if (result.data && result.data.domains.length > 0 && result.data.domains[0].resolver) {
+              const resolver = await provider.getResolver(ensNameLookup);
+              if (resolver) {
+                const texts = result.data.domains[0].resolver.texts || [];
 
-              const textRecords = await Promise.all(
-                texts.map((key: string) => resolver.getText(key))
-              );
-              const newRecords: Record<string, string> = {};
-              texts.forEach((text: string, index: number) => {
-                newRecords[text] = textRecords[index];
-              });
+                const textRecords = await Promise.all(
+                  texts.map((key: string) => resolver.getText(key))
+                );
+                const newRecords: Record<string, string> = {};
+                texts.forEach((text: string, index: number) => {
+                  newRecords[text] = textRecords[index];
+                });
 
-              setEnsRecords(newRecords);
+                setEnsRecords(newRecords);
+              }
+              setLoading(false);
             }
-            setLoading(false);
           }
+        } catch (error) {
+          console.error("Error fetching ENS details:", error);
         }
-      }
-    };
-    if (walletAddress) {
+      };
+
       fetchEnsDetails();
     }
-  }, [walletAddress]);
+  }, [address]);
+
+  useEffect(() => {
+    console.log("Chain ID from useChainId:", chainId);
+    console.log("Expected Chain ID:", Base.chainId);
+    if (chainId && chainId === Base.chainId) {
+      console.log("Networks match!");
+    } else {
+      console.warn("Network mismatch detected.");
+    }
+  }, [chainId]);
 
   const handleProfileRedirect = () => {
     if (address) {
@@ -89,8 +105,8 @@ export default function Navbar() {
   return (
     <div className="w-full rounded-xl py-2">
       <div className="justify-between align-middle">
-        <div className="aligm-items-center flex gap-2">
-          {!walletAddress ? (
+        <div className="align-items-center flex gap-2">
+          {!address ? (
             <ConnectWallet
               theme={"light"}
               btnTitle={"Sign in"}
@@ -102,28 +118,22 @@ export default function Navbar() {
           ) : isMismatched ? (
             <button
               className="px-4 text-sm font-semibold bg-white text-black rounded-full h-9"
-              onClick={() => disconnect()}
+              onClick={() => switchChain(Base.chainId)}
             >
               Switch Network
             </button>
           ) : (
             <div className="flex gap-1 align-middle">
-              <ConnectWallet
-                theme={"light"}
-                btnTitle={"Sign in"}
-                modalTitle={"Choose Wallet"}
-                auth={{ loginOptional: false }}
-                switchToActiveChain={true}
-                modalSize={"compact"}
-              />
+              <button
+                onClick={handleProfileRedirect}
+                className="mt-8 px-4 py-2 bg-blue-500 text-white rounded-md"
+              >
+                Go to your profile
+              </button>
               <div className="flex gap-1 align-middle">
                 <button className="text-decoration-none text-md" onClick={handleProfileRedirect}>
                   <Image
-                    src={
-                      ensRecords.avatar ||
-                      avatarUrl ||
-                      "https://cdn.discordapp.com/attachments/911669935363752026/1235130482258350080/Ellipse_3.png?ex=66334066&is=6631eee6&hm=53326069028bf630c903aea356fe319f841413db48782ecb39a9f53cc518c66b&"
-                    }
+                    src={ensRecords.avatar || avatarUrl || ""}
                     alt="Avatar"
                     height={48}
                     width={48}
