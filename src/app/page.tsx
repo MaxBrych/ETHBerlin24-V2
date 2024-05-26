@@ -27,7 +27,7 @@ export default function Home() {
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="flex flex-col items-center justify-center">
         <h1 className="text-3xl md:text-5xl font-medium text-center mb-12 max-w-xl ">
-          Explore your decentralized Identity and style it
+          Explore your onchain identity and style it
         </h1>
         <form onSubmit={handleSearchSubmit} className="flex items-center w-full max-w-md relative">
           <input
