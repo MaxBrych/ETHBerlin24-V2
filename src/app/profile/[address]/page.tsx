@@ -48,7 +48,7 @@ export default function ProfilePage() {
   const [themeCSS, setThemeCSS] = useState("");
   const address = useAddress();
   const [apiInitialized, setApiInitialized] = useState(false);
-  const { address: walletAddress } = useParams(); // Fetch wallet address from URL
+  const { address: walletAddress } = useParams();
   const { mutateAsync: upload } = useStorageUpload();
 
   // Smart contract information
@@ -167,19 +167,11 @@ export default function ProfilePage() {
       className="min-h-screen flex flex-col items-center p-6"
       style={{ backgroundColor: currentTheme }}
     >
-      <h1 className="text-3xl font-bold mt-6">Profile Info</h1>
+      <h1 className="text-3xl font-bold mt-6">Profile Page</h1>
       <style>{themeCSS}</style>
-      <div className={currentTheme}>
-        {!address ? (
-          <ConnectWallet btnTitle="Sign In" theme="dark" />
-        ) : (
-          (walletAddress as string).toLowerCase() === address.toLowerCase() && (
-            <div className="mt-4"></div>
-          )
-        )}
-      </div>
+      <div className={currentTheme}></div>
       {data?.Wallet && (
-        <div className="bg-white text-black rounded-lg border-gray-300 p-6 mt-6 w-full max-w-2xl text-center">
+        <div className=" text-black  p-6 mt-6 w-full max-w-2xl text-center">
           <img
             src={data.Wallet.primaryDomain?.avatar}
             alt={data.Wallet.primaryDomain?.name}

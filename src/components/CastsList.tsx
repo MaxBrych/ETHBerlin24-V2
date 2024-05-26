@@ -2,7 +2,7 @@ import React from "react";
 
 const CastsList = ({ casts }: any) => {
   return (
-    <div className="bg-white text-black  p-6 mt-6 w-full max-w-2xl">
+    <div className=" text-black  p-6 mt-6 w-full max-w-2xl">
       <h2 className="text-xl font-bold mb-4">Farcaster Casts</h2>
       {casts.length > 0 ? (
         casts.map((cast: any, index: any) => (
