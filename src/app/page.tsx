@@ -16,7 +16,7 @@ export default function Home() {
     }
   };
 
-  const handleSearchSubmit = (e) => {
+  const handleSearchSubmit = (e: any) => {
     e.preventDefault();
     if (searchAddress) {
       router.push(`/profile/${searchAddress}`);
@@ -26,14 +26,16 @@ export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-24">
       <div className="flex flex-col items-center justify-center">
-        <h1 className="text-4xl font-bold text-center mb-8">Welcome to your new app!</h1>
+        <h1 className="text-5xl font-medium text-center mb-12 max-w-xl ">
+          Explore your decentralized Identity and style it
+        </h1>
         <form onSubmit={handleSearchSubmit} className="flex items-center w-full max-w-md relative">
           <input
             type="text"
             placeholder="Enter wallet address"
             value={searchAddress}
             onChange={(e) => setSearchAddress(e.target.value)}
-            className="w-full p-4 pl-12 mb-4 border rounded-full shadow-sm focus:outline-none focus:ring-2 justify-center align-middle bg-gray-800 text-white"
+            className="w-full p-4 pl-12 mb-4 border rounded-full shadow-sm justify-center align-middle bg-white text-black"
           />
           <svg
             className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400"

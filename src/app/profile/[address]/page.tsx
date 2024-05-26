@@ -142,7 +142,7 @@ export default function ProfilePage() {
       </div>
     );
 
-  const renderProfileSection = (profile) => (
+  const renderProfileSection = (profile: any) => (
     <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl">
       <div className="flex items-center space-x-4">
         <img
@@ -195,7 +195,7 @@ export default function ProfilePage() {
         </div>
       )}
       {data?.farcasterSocials?.Social &&
-        data.farcasterSocials.Social.map((profile, index) => (
+        data.farcasterSocials.Social.map((profile: any, index: any) => (
           <div key={index} className="w-full max-w-2xl">
             {renderProfileSection(profile)}
           </div>

@@ -43,7 +43,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="w-full rounded-xl py-2">
+    <div className="w-full rounded-xl py-2 px-4">
       <div className="justify-between align-middle">
         <div className="align-items-center flex gap-2">
           {!address ? (
