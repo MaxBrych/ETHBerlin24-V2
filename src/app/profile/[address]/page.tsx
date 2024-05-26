@@ -174,9 +174,7 @@ export default function ProfilePage() {
           <ConnectWallet btnTitle="Sign In" theme="dark" />
         ) : (
           (walletAddress as string).toLowerCase() === address.toLowerCase() && (
-            <div className="mt-4">
-              <p>Connected with: {address}</p>
-            </div>
+            <div className="mt-4"></div>
           )
         )}
       </div>
