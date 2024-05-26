@@ -211,9 +211,9 @@ export default function ProfilePage() {
             <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={currentTheme} onValueChange={changeTheme}>
-              <DropdownMenuRadioItem value="light">Light Theme</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark">Dark Theme</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="highContrast">High Contrast</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="light">Red Theme</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">Blue Theme</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="highContrast">Yellow Contrast</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
