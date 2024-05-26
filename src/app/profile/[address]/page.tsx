@@ -134,7 +134,7 @@ export default function ProfilePage() {
     }
   }, [apiInitialized, walletAddress]);
 
-  if (isLoading || loading) return <div className="text-white text-center mt-20">Loading...</div>;
+  if (isLoading || loading) return <div className="text-black  text-center mt-20">Loading...</div>;
   if (error || queryError)
     return (
       <div className="text-red-500 text-center mt-20">
@@ -143,7 +143,7 @@ export default function ProfilePage() {
     );
 
   const renderProfileSection = (profile: any) => (
-    <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl">
+    <div className="bg-white text-black border-b-1 border-gray-300 p-6 mt-6 w-full max-w-2xl">
       <div className="flex items-center space-x-4">
         <img
           src={profile.profileImage}
@@ -179,7 +179,7 @@ export default function ProfilePage() {
         )}
       </div>
       {data?.Wallet && (
-        <div className="bg-gray-800 text-white rounded-lg shadow-md p-6 mt-6 w-full max-w-2xl text-center">
+        <div className="bg-white text-black rounded-lg border-gray-300 p-6 mt-6 w-full max-w-2xl text-center">
           <img
             src={data.Wallet.primaryDomain?.avatar}
             alt={data.Wallet.primaryDomain?.name}
