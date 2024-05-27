@@ -27,19 +27,19 @@ import { FaPen } from "react-icons/fa";
 
 const themes = {
   light: `
-    body { background-color: red; color: black; }
-    .bg { background-color: white; }
+    body { background-color: #999999; color: black; }
+    .bg { background-color: #999999; }
     .text { color: black; }
   `,
   dark: `
-    body { background-color: blue; color: white; }
+    body { background-color: black; color: white; }
     .bg { background-color: black; }
     .text { color: white; }
   `,
   highContrast: `
-    body { background-color: yellow; color: blue; }
-    .bg { background-color: yellow; }
-    .text { color: blue; }
+    body { background-color: #0052ff; color: white; }
+    .bg { background-color: #0052ff; }
+    .text { color: white; }
   `,
 };
 
@@ -143,7 +143,7 @@ export default function ProfilePage() {
     );
 
   const renderProfileSection = (profile: any) => (
-    <div className="bg-white text-black border-b-1 border-gray-300 p-6 mt-6 w-full max-w-2xl">
+    <div className=" border-gray-300 p-6 mt-6 w-full max-w-2xl">
       <div className="flex items-center space-x-4">
         <img
           src={profile.profileImage}
@@ -170,8 +170,10 @@ export default function ProfilePage() {
       <h1 className="text-3xl font-bold mt-6">Profile Page</h1>
       <style>{themeCSS}</style>
       <div className={currentTheme}></div>
+      {/* 
       {data?.Wallet && (
-        <div className=" text-black  p-6 mt-6 w-full max-w-2xl text-center">
+        <div className=" p-6 mt-6 w-full max-w-2xl text-center">
+           
           <img
             src={data.Wallet.primaryDomain?.avatar}
             alt={data.Wallet.primaryDomain?.name}
@@ -184,6 +186,7 @@ export default function ProfilePage() {
           </p>
         </div>
       )}
+      */}
       {data?.farcasterSocials?.Social &&
         data.farcasterSocials.Social.map((profile: any, index: any) => (
           <div key={index} className="w-full max-w-2xl">
@@ -194,7 +197,7 @@ export default function ProfilePage() {
       {address && address.toLowerCase() === (walletAddress as string)?.toLowerCase() && (
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="fixed bottom-4 right-4">
+            <Button variant="outline" className="fixed bottom-4 text-black right-4">
               <FaPen className="mr-2" />
               Edit
             </Button>
@@ -203,9 +206,9 @@ export default function ProfilePage() {
             <DropdownMenuLabel>Select Theme</DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuRadioGroup value={currentTheme} onValueChange={changeTheme}>
-              <DropdownMenuRadioItem value="light">Red Theme</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="dark">Blue Theme</DropdownMenuRadioItem>
-              <DropdownMenuRadioItem value="highContrast">Yellow Contrast</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="light">Light Theme</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="dark">Dark Theme</DropdownMenuRadioItem>
+              <DropdownMenuRadioItem value="highContrast">Base Theme</DropdownMenuRadioItem>
             </DropdownMenuRadioGroup>
           </DropdownMenuContent>
         </DropdownMenu>
