@@ -27,8 +27,8 @@ import { FaPen } from "react-icons/fa";
 
 const themes = {
   light: `
-    body { background-color: #999999; color: black; }
-    .bg { background-color: #999999; }
+    body { background-color: white; color: black; }
+    .bg { background-color: white; }
     .text { color: black; }
   `,
   dark: `
@@ -119,13 +119,9 @@ export default function ProfilePage() {
     data,
     loading,
     error: queryError,
-  } = useQuery(
-    GET_PROFILE_INFO,
-    { identity: walletAddress },
-    {
-      enabled: apiInitialized && !!walletAddress,
-    } as any // added any type assertion
-  );
+  } = useQuery(GET_PROFILE_INFO, { identity: walletAddress }, {
+    enabled: apiInitialized && !!walletAddress,
+  } as any);
 
   useEffect(() => {
     if (apiInitialized && walletAddress) {
