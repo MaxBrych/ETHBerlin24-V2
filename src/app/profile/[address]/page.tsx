@@ -129,7 +129,6 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (apiInitialized && walletAddress) {
-      console.log("Query being sent:", GET_PROFILE_INFO);
       console.log("Variables being sent:", { identity: walletAddress });
     }
   }, [apiInitialized, walletAddress]);
